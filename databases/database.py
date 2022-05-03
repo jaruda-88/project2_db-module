@@ -100,7 +100,7 @@ class DBHandler():
         error -> raise Exception(error message)\n
         return success(0↑)/fail(0) '''
         try:
-            conn = self.connector
+            conn = self.connector()
             with conn.cursor(dictionary=is_dictionary) as cursor:
                 cursor.execute(sql, value) if value else cursor.execute(sql)
                 if is_lastrowid:
