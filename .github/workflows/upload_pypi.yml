@@ -19,11 +19,10 @@ jobs:
           
       - name: Installs setup and upgrades pip
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install setuptools wheel
-          if [ -f requirements.txt ]; then pip install -r requirements.txt
-          python3 -m setup.py sdist bdist_wheel
-          python3 -m pip install twine
+          python -m pip install --upgrade pip
+          pip install setuptools wheel
+          python setup.py sdist bdist_wheel
+          pip install twine
           
       - name: Test with unittest
         run: |
