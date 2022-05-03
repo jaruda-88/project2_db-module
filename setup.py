@@ -8,7 +8,7 @@ with open(path.join(this_dir, "README.md"), encoding='utf-8') as f:
     long_description = f.read()
 
 setuptools.setup(name='jarudaDB', # 패키지 명
-version='0.0.2',
+version='0.0.3',
 description='mysql connector python database module',
 long_description=long_description,
 long_description_content_type="text/markdown",

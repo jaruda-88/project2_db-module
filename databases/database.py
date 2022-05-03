@@ -116,3 +116,96 @@ class DBHandler():
             cursor.close()
             conn.close()
             return result
+
+
+    def querys(self, sql_list:list, is_dictionary=True):
+        ''' mysql curd\n
+        param -> datas = [
+                {
+                    'sql': 'SELECT * FROM tb;',
+                    'type': 'query',
+                    'is_all': True
+                },
+                {
+                    'sql': 'UPDATE tb SET value1=%s value2=%s',
+                    'value': ('test', 'test'),
+                    'type': 'executer',
+                    'is_lastrowid': False
+                }
+            ]\n
+        error -> raise Exception(error message)\n
+        return Result query list of input array order
+        '''
+        try:
+            conn = self.connector()            
+            with conn.cursor(dictionary=is_dictionary) as cursor:
+                result = []
+                for data in sql_list:
+                    sql = data['sql']
+                    value = data.get('value', None)
+                    type = data['type']
+                    if type == 'query':
+                        all = data['is_all']
+                        cursor.execute(sql, value) if value else cursor.execute(sql)
+                        result.append(cursor.fetchall() if all else cursor.fetchone())
+                    elif type == 'executer':
+                        last_id = data['is_lastrowid']
+                        cursor.execute(sql, value) if value else cursor.execute(sql)
+                        if last_id:
+                            result.append(cursor.lastrowid) 
+                        conn.commit()
+                        if last_id == False:
+                            result.append(cursor.rowcount)
+                    else:
+                        raise Exception('value error')
+        except mysql.connector.Error as err:
+            raise Exception(err.msg)
+        except Exception as ex:
+            raise Exception(ex.args[0])
+        else:
+            cursor.close()
+            conn.close()
+            return result
+
+
+    def executer_file_list(self, file_list):
+        ''' INSERT TO sql file
+        param -> file_list = open('file.sql', 'r').readlines()\n
+        error -> raise Exception(error message) '''
+        DELIMITER = ';'
+        sql_list = []
+        sql = ''
+
+        for index, value in enumerate(file_list):
+            if not value.strip():
+                continue
+
+            if value.startswith('--'):
+                continue
+
+            if 'DELIMITER' in value:
+                DELIMITER = value.split()[1]
+                continue
+
+            if (DELIMITER not in value):
+                sql += value.replace(DELIMITER, ';')
+                continue
+
+            if sql:
+                sql += value
+                sql_list.append(sql.strip())
+                sql = ''
+            else:
+                sql_list.append(value.strip())
+
+        try:
+            conn = self.connector()
+            with conn.cursor(dictionary=True) as cursor:
+                for query in sql_list:
+                    cursor.execute(query)
+                conn.commit()
+        except Exception as ex:
+            raise Exception(ex.args[0])
+        else:
+            cursor.close()
+            conn.close()    
