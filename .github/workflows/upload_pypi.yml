@@ -17,12 +17,13 @@ jobs:
         with:
           python-version: 3.8
           
-      - name: Installs and upgrades pip and setup
+      - name: Installs setup and upgrades pip
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install setuptools wheel twine
+          python3 -m pip install setuptools wheel
           if [ -f requirements.txt ]; then pip install -r requirements.txt
-          python3 setup.py install
+          python3 -m setup.py sdist bdist_wheel
+          python3 -m pip install twine
           
       - name: Test with unittest
         run: |
